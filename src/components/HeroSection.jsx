@@ -1,18 +1,21 @@
-'use client';
+"use client";
 
-import { ArrowRight } from 'lucide-react';
-import Image from 'next/image';
+import { ArrowRight, Award, Users, TrendingUp } from "lucide-react";
+import Image from "next/image";
 
 export function HeroSection() {
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   return (
-    <section id="home" className="pt-20 min-h-screen flex items-center bg-linear-to-br from-blue-50 to-white">
+    <section
+      id="home"
+      className="pt-20 min-h-screen flex items-center bg-linear-to-br from-blue-50 to-white"
+    >
       <div className="container mx-auto px-4 py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Content */}
@@ -20,44 +23,56 @@ export function HeroSection() {
             <div className="inline-block px-4 py-2 bg-blue-100 text-primary rounded-full text-sm font-medium">
               Công nghệ & Thương mại
             </div>
-            
+
             <h1 className="text-gray-900">
               Công ty Cổ phần Công nghệ Thương mại Tân Phong
             </h1>
-            
-            <p className="text-xl text-gray-600">
-              Đối tác tin cậy trong lĩnh vực công nghệ thông tin, cung cấp giải pháp toàn diện từ phần cứng đến phần mềm
+
+            <p className="text-xl text-gray-600 leading-relaxed">
+              Đối tác tin cậy trong <strong>Tư vấn Giải pháp CNTT</strong>,{" "}
+              <strong>Phát triển Phần mềm</strong>, <strong>EdTech</strong>,{" "}
+              <strong>ERP</strong> và <strong>Chuyển đổi số</strong> cho doanh
+              nghiệp
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
               <button
-                onClick={() => scrollToSection('products')}
-                className="bg-primary hover:bg-primary-dark text-white px-8 py-3 rounded-lg font-medium transition-colors inline-flex items-center justify-center gap-2"
+                onClick={() => scrollToSection("products")}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold transition-all inline-flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:shadow-xl"
               >
-                Xem sản phẩm
+                Khám phá Giải pháp
                 <ArrowRight size={20} />
               </button>
-              
+
               <button
-                onClick={() => scrollToSection('contact')}
-                className="border-2 border-primary text-primary hover:bg-primary hover:text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                onClick={() => scrollToSection("contact")}
+                className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-4 rounded-xl font-semibold transition-all"
               >
-                Liên hệ ngay
+                Tư vấn miễn phí
               </button>
             </div>
-            
+
             <div className="grid grid-cols-3 gap-6 pt-8">
-              <div>
-                <div className="text-3xl font-bold text-primary">10+</div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <TrendingUp className="text-blue-600" size={24} />
+                  <div className="text-3xl font-bold text-gray-900">10+</div>
+                </div>
                 <p className="text-sm text-gray-600">Năm kinh nghiệm</p>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">500+</div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Users className="text-blue-600" size={24} />
+                  <div className="text-3xl font-bold text-gray-900">500+</div>
+                </div>
                 <p className="text-sm text-gray-600">Khách hàng</p>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">100%</div>
-                <p className="text-sm text-gray-600">Hài lòng</p>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Award className="text-blue-600" size={24} />
+                  <div className="text-3xl font-bold text-gray-900">100%</div>
+                </div>
+                <p className="text-sm text-gray-600">Hải lòng</p>
               </div>
             </div>
           </div>
