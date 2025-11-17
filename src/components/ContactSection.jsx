@@ -26,20 +26,22 @@ export function ContactSection() {
     setIsSubmitting(true);
     
     try {
-      // TODO: Gọi API route sau khi tạo database
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Có lỗi xảy ra');
+      }
       
-      // Giả lập gửi thành công
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setSubmitStatus({ type: 'success', message: 'Gửi thông tin thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.' });
+      setSubmitStatus({ type: 'success', message: data.message });
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (error) {
-      setSubmitStatus({ type: 'error', message: 'Có lỗi xảy ra. Vui lòng thử lại sau.' });
+      setSubmitStatus({ type: 'error', message: error.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.' });
     } finally {
       setIsSubmitting(false);
       setTimeout(() => setSubmitStatus(null), 5000);
