@@ -172,6 +172,7 @@ export async function GET(request) {
     return NextResponse.json({
       success: true,
       data: result.rows,
+      total: total, // Thêm total ở root level
       pagination: {
         total,
         limit,

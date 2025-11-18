@@ -63,19 +63,19 @@ export function Footer() {
             <h4 className="text-white font-semibold mb-4">Liên hệ</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
-                <MapPin size={18} className="mt-1 flex-shrink-0 text-primary" />
+                <MapPin size={18} className="mt-1 shrink-0 text-primary" />
                 <span className="text-sm">
                   Số 13 lô 7 Quán Nam, Ngô Kim Tài, P.Kênh Dương, Q.Lê Chân, Hải Phòng
                 </span>
               </li>
               <li className="flex items-center gap-2">
-                <Phone size={18} className="flex-shrink-0 text-primary" />
+                <Phone size={18} className="shrink-0 text-primary" />
                 <a href="tel:0989150269" className="hover:text-primary transition-colors">
                   0989 150 269
                 </a>
               </li>
               <li className="flex items-center gap-2">
-                <Mail size={18} className="flex-shrink-0 text-primary" />
+                <Mail size={18} className="shrink-0 text-primary" />
                 <a href="mailto:contact@tanphong.vn" className="hover:text-primary transition-colors">
                   contact@tanphong.vn
                 </a>

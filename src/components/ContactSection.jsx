@@ -117,28 +117,28 @@ export function ContactSection() {
               
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <MapPin className="text-primary mt-1 flex-shrink-0" size={20} />
+                  <MapPin className="text-primary mt-1 shrink-0" size={20} />
                   <p className="text-gray-600 text-sm">
                     Số 13 lô 7 Quán Nam, Ngô Kim Tài, Phường Kênh Dương, Quận Lê Chân, Hải Phòng
                   </p>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <Phone className="text-primary flex-shrink-0" size={20} />
+                  <Phone className="text-primary shrink-0" size={20} />
                   <a href="tel:0989150269" className="text-gray-600 hover:text-primary transition-colors">
                     0989 150 269
                   </a>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <Mail className="text-primary flex-shrink-0" size={20} />
+                  <Mail className="text-primary shrink-0" size={20} />
                   <a href="mailto:contact@tanphong.vn" className="text-gray-600 hover:text-primary transition-colors">
                     contact@tanphong.vn
                   </a>
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <Clock className="text-primary mt-1 flex-shrink-0" size={20} />
+                  <Clock className="text-primary mt-1 shrink-0" size={20} />
                   <div className="text-sm">
                     <p className="text-gray-600">Thứ 2 - Thứ 6: 8:00 - 17:30</p>
                     <p className="text-gray-600">Thứ 7: 8:00 - 12:00</p>
@@ -175,9 +175,9 @@ export function ContactSection() {
                     : 'bg-red-50 text-red-700 border border-red-200'
                 }`}>
                   {submitStatus.type === 'success' ? (
-                    <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
+                    <CheckCircle size={20} className="shrink-0 mt-0.5" />
                   ) : (
-                    <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+                    <AlertCircle size={20} className="shrink-0 mt-0.5" />
                   )}
                   <p className="text-sm">{submitStatus.message}</p>
                 </div>
