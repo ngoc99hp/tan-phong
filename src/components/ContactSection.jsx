@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
@@ -19,30 +19,68 @@ export function ContactSection() {
     
     // Validate
     if (!formData.name || !formData.email || !formData.phone || !formData.message) {
-      setSubmitStatus({ type: 'error', message: 'Vui lòng điền đầy đủ thông tin' });
+      setSubmitStatus({ 
+        type: 'error', 
+        message: 'Vui lòng điền đầy đủ thông tin bắt buộc' 
+      });
       return;
     }
 
     setIsSubmitting(true);
+    setSubmitStatus(null);
     
     try {
-      // TODO: Gọi API route sau khi tạo database
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(formData)
+      });
       
-      // Giả lập gửi thành công
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const data = await response.json();
       
-      setSubmitStatus({ type: 'success', message: 'Gửi thông tin thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.' });
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      if (response.ok && data.success) {
+        setSubmitStatus({ 
+          type: 'success', 
+          message: data.message || 'Gửi thông tin thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.' 
+        });
+        
+        // Reset form
+        setFormData({ 
+          name: '', 
+          email: '', 
+          phone: '', 
+          subject: '', 
+          message: '' 
+        });
+        
+        // Scroll to success message
+        setTimeout(() => {
+          const element = document.getElementById('contact-form');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }, 100);
+      } else {
+        setSubmitStatus({ 
+          type: 'error', 
+          message: data.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.' 
+        });
+      }
     } catch (error) {
-      setSubmitStatus({ type: 'error', message: 'Có lỗi xảy ra. Vui lòng thử lại sau.' });
+      console.error('Error submitting contact form:', error);
+      setSubmitStatus({ 
+        type: 'error', 
+        message: 'Không thể kết nối đến server. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua hotline.' 
+      });
     } finally {
       setIsSubmitting(false);
-      setTimeout(() => setSubmitStatus(null), 5000);
+      
+      // Auto hide success message after 10 seconds
+      if (submitStatus?.type === 'success') {
+        setTimeout(() => setSubmitStatus(null), 10000);
+      }
     }
   };
 
@@ -51,6 +89,11 @@ export function ContactSection() {
       ...formData,
       [e.target.name]: e.target.value
     });
+    
+    // Clear error when user starts typing
+    if (submitStatus?.type === 'error') {
+      setSubmitStatus(null);
+    }
   };
 
   return (
@@ -82,14 +125,14 @@ export function ContactSection() {
                 
                 <div className="flex items-center gap-3">
                   <Phone className="text-primary flex-shrink-0" size={20} />
-                  <a href="tel:0989150269" className="text-gray-600 hover:text-primary">
+                  <a href="tel:0989150269" className="text-gray-600 hover:text-primary transition-colors">
                     0989 150 269
                   </a>
                 </div>
                 
                 <div className="flex items-center gap-3">
                   <Mail className="text-primary flex-shrink-0" size={20} />
-                  <a href="mailto:contact@tanphong.vn" className="text-gray-600 hover:text-primary">
+                  <a href="mailto:contact@tanphong.vn" className="text-gray-600 hover:text-primary transition-colors">
                     contact@tanphong.vn
                   </a>
                 </div>
@@ -110,32 +153,40 @@ export function ContactSection() {
               <p className="text-blue-100 text-sm mb-4">
                 Liên hệ ngay để được tư vấn
               </p>
-              <a href="tel:0989150269" className="text-3xl font-bold hover:underline">
+              <a href="tel:0989150269" className="text-3xl font-bold hover:underline block">
                 0989 150 269
               </a>
             </div>
           </div>
 
           {/* Contact Form */}
-          <div className="md:col-span-2">
+          <div className="md:col-span-2" id="contact-form">
             <div className="bg-white rounded-2xl p-8 shadow-lg">
               <h4 className="text-gray-900 font-semibold mb-2">Gửi tin nhắn cho chúng tôi</h4>
               <p className="text-gray-600 text-sm mb-6">
                 Điền thông tin vào form bên dưới, chúng tôi sẽ phản hồi trong vòng 24h
               </p>
 
+              {/* Status Messages */}
               {submitStatus && (
-                <div className={`mb-6 p-4 rounded-lg ${
-                  submitStatus.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+                  submitStatus.type === 'success' 
+                    ? 'bg-green-50 text-green-700 border border-green-200' 
+                    : 'bg-red-50 text-red-700 border border-red-200'
                 }`}>
-                  {submitStatus.message}
+                  {submitStatus.type === 'success' ? (
+                    <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+                  )}
+                  <p className="text-sm">{submitStatus.message}</p>
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm text-gray-700 mb-2 block">
+                    <label className="text-sm text-gray-700 mb-2 block font-medium">
                       Họ và tên <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -144,12 +195,13 @@ export function ContactSection() {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Nguyễn Văn A"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-gray-700 mb-2 block">
+                    <label className="text-sm text-gray-700 mb-2 block font-medium">
                       Số điện thoại <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -157,15 +209,16 @@ export function ContactSection() {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="0123 456 789"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      placeholder="0989 150 269"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm text-gray-700 mb-2 block">
+                  <label className="text-sm text-gray-700 mb-2 block font-medium">
                     Email <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -174,13 +227,14 @@ export function ContactSection() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="email@example.com"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm text-gray-700 mb-2 block">
+                  <label className="text-sm text-gray-700 mb-2 block font-medium">
                     Tiêu đề
                   </label>
                   <input
@@ -188,13 +242,14 @@ export function ContactSection() {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    placeholder="Tư vấn sản phẩm..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    placeholder="Tư vấn giải pháp ERP..."
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+                    disabled={isSubmitting}
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm text-gray-700 mb-2 block">
+                  <label className="text-sm text-gray-700 mb-2 block font-medium">
                     Nội dung tin nhắn <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -203,8 +258,9 @@ export function ContactSection() {
                     onChange={handleChange}
                     placeholder="Nhập nội dung cần tư vấn..."
                     rows={6}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none transition-all"
                     required
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -214,7 +270,10 @@ export function ContactSection() {
                   className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
-                    <>Đang gửi...</>
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Đang gửi...
+                    </>
                   ) : (
                     <>
                       <Send size={20} />
