@@ -121,3 +121,65 @@ export async function getServiceBySlug(slug) {
     };
   }
 }
+
+
+export async function POST(request) {
+  try {
+    const body = await request.json();
+    const { title, slug, description, icon, is_active, display_order } = body;
+
+    // Validate dữ liệu bắt buộc
+    if (!title || !slug) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Thiếu thông tin",
+          message: "Vui lòng nhập title và slug"
+        },
+        { status: 400 }
+      );
+    }
+
+    const queryText = `
+      INSERT INTO services (
+        title,
+        slug,
+        description,
+        icon,
+        is_active,
+        display_order,
+        created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      RETURNING *
+    `;
+
+    const result = await query(queryText, [
+      title.trim(),
+      slug.trim().toLowerCase(),
+      description || null,
+      icon || null,
+      is_active ?? true,
+      display_order ?? 0
+    ]);
+
+    return NextResponse.json({
+      success: true,
+      data: result.rows[0],
+      message: "Thêm dịch vụ thành công"
+    });
+
+  } catch (error) {
+    console.error("❌ Error creating service:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Có lỗi xảy ra khi tạo dịch vụ",
+        message: error.message
+      },
+      { status: 500 }
+    );
+  }
+}
+
+
