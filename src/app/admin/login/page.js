@@ -182,19 +182,7 @@ export default function AdminLoginPage() {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-gray-700 mb-2 font-medium">🔑 Tài khoản demo:</p>
-            <div className="space-y-1 text-sm text-gray-600">
-              <p>
-                Username: 
-                <code className="bg-white px-2 py-0.5 rounded ml-1 font-mono text-xs">admin</code>
-              </p>
-              <p>
-                Password: 
-                <code className="bg-white px-2 py-0.5 rounded ml-1 font-mono text-xs">admin123</code>
-              </p>
-            </div>
-          </div>
+          
         </div>
 
         {/* Footer */}
