@@ -8,19 +8,36 @@ const REFRESH_BEFORE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 // Access token expires sau 15 phút
 const ACCESS_TOKEN_LIFETIME = 15 * 60 * 1000; // 15 minutes
 
+// Thống nhất các keys localStorage
+const STORAGE_KEYS = {
+  ACCESS_TOKEN: 'access_token',
+  REFRESH_TOKEN: 'refresh_token',
+  USER: 'user',
+  TOKEN_TIMESTAMP: 'token_timestamp'
+};
+
 export function AuthProvider({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted flag để tránh hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Function refresh access token
   const refreshAccessToken = async () => {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      if (typeof window === 'undefined') return false;
+      
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       
       if (!refreshToken) {
-        throw new Error('No refresh token');
+        console.warn('No refresh token found');
+        return false;
       }
 
       const response = await fetch('/api/auth/refresh', {
@@ -35,31 +52,27 @@ export function AuthProvider({ children }) {
 
       if (response.ok && data.success) {
         // Update tokens
-        localStorage.setItem('access_token', data.accessToken);
-        localStorage.setItem('refresh_token', data.refreshToken);
-        localStorage.setItem('token_timestamp', Date.now().toString());
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
+        localStorage.setItem(STORAGE_KEYS.TOKEN_TIMESTAMP, Date.now().toString());
         
         console.log('✅ Token refreshed successfully');
         return true;
       } else {
-        throw new Error(data.message || 'Failed to refresh token');
+        console.error('Refresh failed:', data.message);
+        return false;
       }
     } catch (error) {
       console.error('❌ Error refreshing token:', error);
-      
-      // Clear tokens và redirect to login
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('token_timestamp');
-      
       return false;
     }
   };
 
   // Check if token needs refresh
   const shouldRefreshToken = () => {
-    const timestamp = localStorage.getItem('token_timestamp');
+    if (typeof window === 'undefined') return false;
+    
+    const timestamp = localStorage.getItem(STORAGE_KEYS.TOKEN_TIMESTAMP);
     if (!timestamp) return true;
     
     const elapsed = Date.now() - parseInt(timestamp);
@@ -69,71 +82,126 @@ export function AuthProvider({ children }) {
     return timeUntilExpiry <= REFRESH_BEFORE_EXPIRY;
   };
 
-  // Setup auto refresh interval
+  // Clear all authentication data
+  const clearAuth = () => {
+    if (typeof window === 'undefined') return;
+    
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    localStorage.removeItem(STORAGE_KEYS.TOKEN_TIMESTAMP);
+    
+    setIsAuthenticated(false);
+  };
+
+  // Initial auth check - chạy một lần sau khi mounted
   useEffect(() => {
-    if (!isAuthenticated || pathname === '/admin/login') {
-      return;
-    }
-
-    // Check và refresh ngay lập tức nếu cần
-    if (shouldRefreshToken()) {
-      refreshAccessToken();
-    }
-
-    // Setup interval check mỗi 1 phút
-    const interval = setInterval(async () => {
-      if (shouldRefreshToken()) {
-        const success = await refreshAccessToken();
-        
-        if (!success) {
-          // Token refresh failed, redirect to login
-          router.push('/admin/login');
-        }
-      }
-    }, 60 * 1000); // Check every 1 minute
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, pathname, router]);
-
-  // Initial auth check
-  useEffect(() => {
-    // Skip auth check cho trang login
-    if (pathname === '/admin/login') {
-      setLoading(false);
-      return;
-    }
+    if (!mounted) return;
 
     const checkAuth = async () => {
-      const accessToken = localStorage.getItem('access_token');
-      const refreshToken = localStorage.getItem('refresh_token');
-      const user = localStorage.getItem('user');
+      // Kiểm tra các tokens trước tiên
+      if (typeof window === 'undefined') {
+        setLoading(false);
+        return;
+      }
 
-      if (!accessToken || !refreshToken || !user) {
+      const accessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+      const user = localStorage.getItem(STORAGE_KEYS.USER);
+      const hasTokens = !!(accessToken && refreshToken && user);
+
+      // Trang login
+      if (pathname === '/admin/login') {
+        // Nếu đã login, redirect về admin
+        if (hasTokens) {
+          console.log('✅ Already authenticated, redirecting to /admin');
+          router.push('/admin');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Các trang khác (/admin, /admin/products, v.v.)
+      if (!hasTokens) {
         // Chưa đăng nhập -> redirect to login
+        console.warn('⚠️ No tokens found, redirecting to login');
+        clearAuth();
         router.push('/admin/login');
         setLoading(false);
         return;
       }
 
-      // Kiểm tra nếu token sắp hết hạn
-      if (shouldRefreshToken()) {
-        const success = await refreshAccessToken();
-        
-        if (!success) {
-          router.push('/admin/login');
-          setLoading(false);
-          return;
+      try {
+        // Kiểm tra nếu token sắp hết hạn
+        if (shouldRefreshToken()) {
+          const success = await refreshAccessToken();
+          
+          if (!success) {
+            console.error('Failed to refresh token');
+            clearAuth();
+            router.push('/admin/login');
+            setLoading(false);
+            return;
+          }
         }
-      }
 
-      setIsAuthenticated(true);
-      setLoading(false);
+        // Nếu tất cả ok, set authenticated = true
+        setIsAuthenticated(true);
+        setLoading(false);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        clearAuth();
+        router.push('/admin/login');
+        setLoading(false);
+      }
     };
 
     checkAuth();
-  }, [pathname, router]);
+  }, [mounted, pathname, router]);
 
-  // Loading state
+  // Setup auto refresh interval - chỉ chạy khi authenticated
+  useEffect(() => {
+    if (!mounted || !isAuthenticated || pathname === '/admin/login') {
+      return;
+    }
+
+    // Setup interval check mỗi 1 phút
+    const interval = setInterval(async () => {
+      if (shouldRefreshToken()) {
+        console.log('🔄 Refreshing token...');
+        const success = await refreshAccessToken();
+        
+        if (!success) {
+          console.error('Token refresh failed, logging out');
+          clearAuth();
+          router.push('/admin/login');
+        }
+      }
+    }, 60 * 1000); // Check every 1 minute
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [mounted, isAuthenticated, pathname, router]);
+
+  // Show loading screen khi chưa mount
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Trang login: render children luôn (không cần check auth)
+  if (pathname === '/admin/login') {
+    return children;
+  }
+
+  // Khi loading, show loading screen
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -145,62 +213,86 @@ export function AuthProvider({ children }) {
     );
   }
 
-  // Trang login không cần check auth
-  if (pathname === '/admin/login') {
+  // Chỉ render children khi đã authenticated
+  if (isAuthenticated) {
     return children;
   }
 
-  // Chỉ render children khi đã authenticated
-  return isAuthenticated ? children : null;
+  // Chưa authenticated, show loading (redirect sẽ diễn ra)
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-gray-600">Đang chuyển hướng...</p>
+      </div>
+    </div>
+  );
 }
 
 /**
- * Hook để lấy user info và tokens
+ * Hook để lấy user info, tokens và logout function
  */
 export function useAuth() {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    const token = localStorage.getItem('access_token');
-    
-    if (userStr) {
-      try {
-        setUser(JSON.parse(userStr));
-      } catch (e) {
-        console.error('Error parsing user data');
-      }
+    if (typeof window === 'undefined') {
+      setLoading(false);
+      return;
     }
-    
-    if (token) {
-      setAccessToken(token);
+
+    try {
+      const userStr = localStorage.getItem(STORAGE_KEYS.USER);
+      const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      
+      if (userStr) {
+        setUser(JSON.parse(userStr));
+      }
+      
+      if (token) {
+        setAccessToken(token);
+      }
+    } catch (error) {
+      console.error('Error loading auth data:', error);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   const logout = async () => {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      if (typeof window === 'undefined') return;
+
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       
       // Call logout API
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ refreshToken })
-      });
+      if (refreshToken) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ refreshToken })
+        }).catch(err => console.error('Logout API error:', err));
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       // Clear localStorage
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('token_timestamp');
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      localStorage.removeItem(STORAGE_KEYS.TOKEN_TIMESTAMP);
+      
+      // Reset state
+      setUser(null);
+      setAccessToken(null);
       
       // Redirect
-      window.location.href = '/admin/login';
+      router.push('/admin/login');
     }
   };
 
@@ -208,6 +300,10 @@ export function useAuth() {
     user,
     accessToken,
     logout,
+    loading,
     isAuthenticated: !!user && !!accessToken
   };
 }
+
+// Export storage keys để dùng ở nơi khác
+export { STORAGE_KEYS };

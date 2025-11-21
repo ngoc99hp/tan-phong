@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Lock, User, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
+import { STORAGE_KEYS } from '@/middleware/auth';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   
   const [formData, setFormData] = useState({
     username: '',
@@ -16,23 +18,35 @@ export default function AdminLoginPage() {
   });
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    setError(''); // Clear error khi user nhập
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error khi user nhập
+    if (error) {
+      setError('');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validation
     if (!formData.username || !formData.password) {
-      setError('Vui lòng điền đầy đủ thông tin');
+      setError('Vui lòng điền đầy đủ tên đăng nhập và mật khẩu');
+      return;
+    }
+
+    if (formData.password.length < 3) {
+      setError('Mật khẩu phải có ít nhất 3 ký tự');
       return;
     }
 
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       const response = await fetch('/api/auth/login', {
@@ -46,18 +60,24 @@ export default function AdminLoginPage() {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        // Lưu token vào localStorage
-        localStorage.setItem('admin_token', data.token);
-        localStorage.setItem('admin_user', JSON.stringify(data.user));
+        // Lưu tokens với keys đúng
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken || data.token);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
+        localStorage.setItem(STORAGE_KEYS.TOKEN_TIMESTAMP, Date.now().toString());
         
-        // Redirect to dashboard
-        router.push('/admin');
+        setSuccess('Đăng nhập thành công! Đang chuyển hướng...');
+        
+        // Redirect sau 1 giây
+        setTimeout(() => {
+          router.push('/admin');
+        }, 1000);
       } else {
-        setError(data.message || 'Đăng nhập thất bại');
+        setError(data.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError('Không thể kết nối đến server');
+      console.error('❌ Login error:', error);
+      setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +97,7 @@ export default function AdminLoginPage() {
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
+          {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
               <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
@@ -84,8 +105,16 @@ export default function AdminLoginPage() {
             </div>
           )}
 
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+              <CheckCircle className="text-green-600 flex-shrink-0 mt-0.5" size={20} />
+              <p className="text-sm text-green-700">{success}</p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username */}
+            {/* Username Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Tên đăng nhập
@@ -101,11 +130,12 @@ export default function AdminLoginPage() {
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                   disabled={loading}
                   autoFocus
+                  autoComplete="username"
                 />
               </div>
             </div>
 
-            {/* Password */}
+            {/* Password Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Mật khẩu
@@ -120,11 +150,14 @@ export default function AdminLoginPage() {
                   placeholder="Nhập mật khẩu"
                   className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
                   disabled={loading}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  disabled={loading}
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiển thị mật khẩu'}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -149,18 +182,24 @@ export default function AdminLoginPage() {
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-gray-700 mb-2 font-medium">🔑 Tài khoản demo:</p>
             <div className="space-y-1 text-sm text-gray-600">
-              <p>Username: <code className="bg-white px-2 py-0.5 rounded">admin</code></p>
-              <p>Password: <code className="bg-white px-2 py-0.5 rounded">admin123</code></p>
+              <p>
+                Username: 
+                <code className="bg-white px-2 py-0.5 rounded ml-1 font-mono text-xs">admin</code>
+              </p>
+              <p>
+                Password: 
+                <code className="bg-white px-2 py-0.5 rounded ml-1 font-mono text-xs">admin123</code>
+              </p>
             </div>
           </div>
         </div>
 
         {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-6">
-          © 2024 Tân Phong Technology & Trading
+          © 2024 Tân Phong Technology & Trading. All rights reserved.
         </p>
       </div>
     </div>

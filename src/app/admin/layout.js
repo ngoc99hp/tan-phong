@@ -2,7 +2,8 @@
 
 import { Package, LayoutDashboard, Settings, LogOut, MessageSquare, User as UserIcon } from 'lucide-react';
 import Link from 'next/link';
-import { AuthProvider, useAuth } from '@/middleware/auth';
+import { usePathname } from 'next/navigation';
+import { AuthProvider, useAuth, STORAGE_KEYS } from '@/middleware/auth';
 
 function AdminHeader() {
   const { user, logout } = useAuth();
@@ -36,6 +37,7 @@ function AdminHeader() {
           <button 
             onClick={logout}
             className="flex items-center gap-2 text-gray-600 hover:text-red-600 transition-colors px-3 py-2 rounded-lg hover:bg-red-50"
+            title="Đăng xuất"
           >
             <LogOut size={20} />
             <span>Đăng xuất</span>
@@ -98,10 +100,29 @@ function AdminLayoutContent({ children }) {
   );
 }
 
+function AdminLayoutWrapper({ children }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/admin/login';
+
+  // Nếu là trang login, không render layout
+  if (isLoginPage) {
+    return children;
+  }
+
+  // Nếu không phải login page, render full layout
+  return (
+    <AdminLayoutContent>
+      {children}
+    </AdminLayoutContent>
+  );
+}
+
 export default function AdminLayout({ children }) {
   return (
     <AuthProvider>
-      <AdminLayoutContent>{children}</AdminLayoutContent>
+      <AdminLayoutWrapper>
+        {children}
+      </AdminLayoutWrapper>
     </AuthProvider>
   );
 }
