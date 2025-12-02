@@ -110,10 +110,10 @@ export function AboutSection() {
               <div className="w-32 h-32 bg-linear-to-br from-blue-500 to-blue-700 rounded-full mx-auto mb-6 flex items-center justify-center">
                 <span className="text-white text-4xl font-bold">TT</span>
               </div>
-              <h4 className="text-2xl font-bold text-gray-900">Ông Trần Hữu Trung</h4>
+              <h4 className="text-2xl font-bold text-gray-900">Ông Đỗ Văn Tuyên</h4>
               <p className="text-blue-600 font-semibold mb-3">Giám đốc Điều hành</p>
               <p className="text-gray-600">
-                Hơn 18 năm kinh nghiệm trong lĩnh vực công nghệ thông tin, từng đảm nhiệm vị trí lãnh đạo các dự án chuyển đổi số lớn tại Việt Nam và khu vực.
+                Hơn 15 năm kinh nghiệm trong lĩnh vực công nghệ thông tin, từng đảm nhiệm vị trí lãnh đạo các dự án chuyển đổi số lớn tại Việt Nam và khu vực.
               </p>
             </div>
           </div>
