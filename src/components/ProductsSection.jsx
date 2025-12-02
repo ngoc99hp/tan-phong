@@ -174,9 +174,9 @@ export function ProductsSection() {
                       <p className="text-gray-600 text-sm mb-4 line-clamp-3 min-h-18">
                         {product.description}
                       </p>
-                      <div className="text-primary font-bold text-lg mb-4">
+                      {/* <div className="text-primary font-bold text-lg mb-4">
                         {product.price}
-                      </div>
+                      </div> */}
                       <button 
                         onClick={scrollToContact}
                         className="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg font-medium transition-colors"
