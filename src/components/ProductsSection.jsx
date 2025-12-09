@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Package, GraduationCap, Zap, Settings } from 'lucide-react';
-import Image from 'next/image';
+import { useState, useEffect } from "react";
+import { Package, GraduationCap, Zap, Settings } from "lucide-react";
+import Image from "next/image";
+import Link from 'next/link';
 
 // Map icon names từ database sang Lucide components
 const iconMap = {
-  'Package': Package,
-  'GraduationCap': GraduationCap,
-  'Zap': Zap,
-  'Settings': Settings,
+  Package: Package,
+  GraduationCap: GraduationCap,
+  Zap: Zap,
+  Settings: Settings,
 };
 
 export function ProductsSection() {
@@ -25,33 +26,35 @@ export function ProductsSection() {
     try {
       setLoading(true);
       // Lấy sản phẩm nổi bật, đang hoạt động
-      const response = await fetch('/api/products?is_active=true');
+      const response = await fetch("/api/products?is_active=true");
       const data = await response.json();
 
       if (data.success) {
         // Lọc mỗi category chỉ lấy 3 sản phẩm nổi bật
-        const filteredData = data.data.map(categoryGroup => ({
-          ...categoryGroup,
-          products: categoryGroup.products
-            .filter(p => p.is_featured) // Chỉ lấy sản phẩm nổi bật
-            .slice(0, 3) // Giới hạn 3 sản phẩm
-        })).filter(categoryGroup => categoryGroup.products.length > 0); // Chỉ giữ category có sản phẩm
+        const filteredData = data.data
+          .map((categoryGroup) => ({
+            ...categoryGroup,
+            products: categoryGroup.products
+              .filter((p) => p.is_featured) // Chỉ lấy sản phẩm nổi bật
+              .slice(0, 3), // Giới hạn 3 sản phẩm
+          }))
+          .filter((categoryGroup) => categoryGroup.products.length > 0); // Chỉ giữ category có sản phẩm
 
         setProductCategories(filteredData);
       } else {
-        setError(data.message || 'Không thể tải dữ liệu sản phẩm');
+        setError(data.message || "Không thể tải dữ liệu sản phẩm");
       }
     } catch (err) {
-      console.error('Error fetching products:', err);
-      setError('Có lỗi xảy ra khi tải dữ liệu');
+      console.error("Error fetching products:", err);
+      setError("Có lỗi xảy ra khi tải dữ liệu");
     } finally {
       setLoading(false);
     }
   };
 
   const scrollToContact = () => {
-    const element = document.getElementById('contact');
-    if (element) element.scrollIntoView({ behavior: 'smooth' });
+    const element = document.getElementById("contact");
+    if (element) element.scrollIntoView({ behavior: "smooth" });
   };
 
   // Loading state
@@ -108,7 +111,8 @@ export function ProductsSection() {
         <div className="text-center mb-16">
           <h2 className="text-gray-900 mb-4">Giải pháp & Sản phẩm</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Đa dạng giải pháp công nghệ chuyên nghiệp, đáp ứng mọi nhu cầu của doanh nghiệp
+            Đa dạng giải pháp công nghệ chuyên nghiệp, đáp ứng mọi nhu cầu của
+            doanh nghiệp
           </p>
         </div>
 
@@ -116,7 +120,7 @@ export function ProductsSection() {
         {productCategories.map((categoryGroup, idx) => {
           // Lấy icon component từ icon name trong database
           const IconComponent = iconMap[categoryGroup.category.icon] || Package;
-          
+
           return (
             <div key={categoryGroup.category.id} className="mb-16 last:mb-0">
               {/* Category Header */}
@@ -125,7 +129,9 @@ export function ProductsSection() {
                   <IconComponent className="text-white" size={24} />
                 </div>
                 <div>
-                  <h3 className="text-gray-900">{categoryGroup.category.name}</h3>
+                  <h3 className="text-gray-900">
+                    {categoryGroup.category.name}
+                  </h3>
                   <p className="text-gray-600 text-sm">
                     {categoryGroup.products.length} sản phẩm nổi bật
                   </p>
@@ -135,8 +141,8 @@ export function ProductsSection() {
               {/* Product Grid */}
               <div className="grid md:grid-cols-3 gap-6">
                 {categoryGroup.products.map((product) => (
-                  <div 
-                    key={product.id} 
+                  <div
+                    key={product.id}
                     className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
                   >
                     <div className="relative h-48 bg-linear-to-br from-blue-50 to-blue-100 flex items-center justify-center overflow-hidden">
@@ -150,7 +156,7 @@ export function ProductsSection() {
                           sizes="(max-width: 768px) 100vw, 33vw"
                           onError={(e) => {
                             // Nếu ảnh lỗi, ẩn đi và hiển thị icon
-                            e.target.style.display = 'none';
+                            e.target.style.display = "none";
                           }}
                         />
                       ) : (
@@ -159,14 +165,14 @@ export function ProductsSection() {
                           <IconComponent className="text-primary" size={32} />
                         </div>
                       )}
-                      
+
                       {product.badge && (
                         <span className="absolute top-4 right-4 bg-primary text-white px-3 py-1 rounded-full text-xs font-medium z-10">
                           {product.badge}
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="p-6">
                       <h4 className="text-gray-900 font-semibold mb-2 line-clamp-2 min-h-14">
                         {product.name}
@@ -177,9 +183,15 @@ export function ProductsSection() {
                       {/* <div className="text-primary font-bold text-lg mb-4">
                         {product.price}
                       </div> */}
-                      <button 
+                      <Link
+                        href={`/products/${product.slug}`}
+                        className="block w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors text-center"
+                      >
+                        Xem chi tiết
+                      </Link>
+                      <button
                         onClick={scrollToContact}
-                        className="w-full bg-primary hover:bg-primary-dark text-white py-2 rounded-lg font-medium transition-colors"
+                        className="w-full bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white py-2 rounded-lg font-medium transition-colors mt-2"
                       >
                         Liên hệ tư vấn
                       </button>
@@ -195,9 +207,10 @@ export function ProductsSection() {
         <div className="mt-16 bg-linear-to-r from-primary to-blue-600 rounded-2xl p-12 text-center text-white">
           <h3 className="text-white mb-4">Chưa tìm thấy giải pháp phù hợp?</h3>
           <p className="mb-8 text-blue-100 max-w-2xl mx-auto">
-            Liên hệ với chúng tôi để được tư vấn chi tiết về các giải pháp phù hợp nhất với nhu cầu của doanh nghiệp bạn
+            Liên hệ với chúng tôi để được tư vấn chi tiết về các giải pháp phù
+            hợp nhất với nhu cầu của doanh nghiệp bạn
           </p>
-          <button 
+          <button
             onClick={scrollToContact}
             className="bg-white text-primary px-8 py-3 rounded-lg hover:bg-gray-100 transition-colors font-medium"
           >
