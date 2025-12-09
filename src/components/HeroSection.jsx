@@ -56,14 +56,14 @@ export function HeroSection() {
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <TrendingUp className="text-blue-600" size={24} />
-                  <div className="text-3xl font-bold text-gray-900">10+</div>
+                  <div className="text-3xl font-bold text-gray-900">7+</div>
                 </div>
                 <p className="text-sm text-gray-600">Năm kinh nghiệm</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Users className="text-blue-600" size={24} />
-                  <div className="text-3xl font-bold text-gray-900">500+</div>
+                  <div className="text-3xl font-bold text-gray-900">50+</div>
                 </div>
                 <p className="text-sm text-gray-600">Khách hàng</p>
               </div>

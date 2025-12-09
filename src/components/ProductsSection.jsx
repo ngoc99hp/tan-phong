@@ -177,7 +177,7 @@ export function ProductsSection() {
                       <h4 className="text-gray-900 font-semibold mb-2 line-clamp-2 min-h-14">
                         {product.name}
                       </h4>
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3 min-h-18">
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                         {product.description}
                       </p>
                       {/* <div className="text-primary font-bold text-lg mb-4">

@@ -16,12 +16,17 @@ export async function GET(request, { params }) {
         p.name,
         p.slug,
         p.description,
+        p.content,
         p.price,
         p.badge,
         p.image_url,
+        p.meta_title,
+        p.meta_description,
+        p.published_at,
         p.is_featured,
         p.is_active,
         p.display_order,
+        p.views_count,
         p.created_at,
         p.updated_at,
         c.name as category_name,
@@ -67,7 +72,11 @@ export async function GET(request, { params }) {
 /**
  * PUT /api/products/[id]
  * Cập nhật thông tin sản phẩm (Admin only)
- * Body: { category_id?, name?, slug?, description?, price?, badge?, image_url?, is_featured?, is_active?, display_order? }
+ * Body: {
+ *   category_id, name, slug, description, content,
+ *   price, badge, image_url, meta_title, meta_description,
+ *   published_at, is_featured, is_active, display_order
+ * }
  */
 export async function PUT(request, { params }) {
   try {
@@ -78,9 +87,13 @@ export async function PUT(request, { params }) {
       name,
       slug,
       description,
+      content,
       price,
       badge,
       image_url,
+      meta_title,
+      meta_description,
+      published_at,
       is_featured,
       is_active,
       display_order
@@ -141,59 +154,96 @@ export async function PUT(request, { params }) {
       }
     }
 
-    // Xây dựng câu UPDATE động
+    // Xây dựng câu UPDATE động với TẤT CẢ các trường từ form
     const updates = [];
     const values = [];
     let paramCount = 1;
 
     if (category_id !== undefined) {
       updates.push(`category_id = $${paramCount}`);
-      values.push(category_id);
+      values.push(parseInt(category_id));
       paramCount++;
     }
+    
     if (name !== undefined) {
       updates.push(`name = $${paramCount}`);
       values.push(name.trim());
       paramCount++;
     }
+    
     if (slug !== undefined) {
       updates.push(`slug = $${paramCount}`);
       values.push(slug.trim().toLowerCase());
       paramCount++;
     }
+    
     if (description !== undefined) {
       updates.push(`description = $${paramCount}`);
       values.push(description?.trim() || null);
       paramCount++;
     }
+    
+    // THÊM: content field (rich text editor)
+    if (content !== undefined) {
+      updates.push(`content = $${paramCount}`);
+      values.push(content?.trim() || null);
+      paramCount++;
+    }
+    
     if (price !== undefined) {
       updates.push(`price = $${paramCount}`);
       values.push(price?.trim() || null);
       paramCount++;
     }
+    
     if (badge !== undefined) {
       updates.push(`badge = $${paramCount}`);
       values.push(badge?.trim() || null);
       paramCount++;
     }
+    
     if (image_url !== undefined) {
       updates.push(`image_url = $${paramCount}`);
       values.push(image_url?.trim() || null);
       paramCount++;
     }
+    
+    // THÊM: meta_title field
+    if (meta_title !== undefined) {
+      updates.push(`meta_title = $${paramCount}`);
+      values.push(meta_title?.trim() || null);
+      paramCount++;
+    }
+    
+    // THÊM: meta_description field
+    if (meta_description !== undefined) {
+      updates.push(`meta_description = $${paramCount}`);
+      values.push(meta_description?.trim() || null);
+      paramCount++;
+    }
+    
+    // THÊM: published_at field
+    if (published_at !== undefined) {
+      updates.push(`published_at = $${paramCount}`);
+      values.push(published_at ? new Date(published_at) : null);
+      paramCount++;
+    }
+    
     if (is_featured !== undefined) {
       updates.push(`is_featured = $${paramCount}`);
       values.push(is_featured);
       paramCount++;
     }
+    
     if (is_active !== undefined) {
       updates.push(`is_active = $${paramCount}`);
       values.push(is_active);
       paramCount++;
     }
+    
     if (display_order !== undefined) {
       updates.push(`display_order = $${paramCount}`);
-      values.push(display_order);
+      values.push(parseInt(display_order));
       paramCount++;
     }
 
@@ -217,9 +267,10 @@ export async function PUT(request, { params }) {
       SET ${updates.join(', ')}
       WHERE id = $${paramCount}
       RETURNING 
-        id, category_id, name, slug, description, price, badge,
-        image_url, is_featured, is_active, display_order, 
-        created_at, updated_at
+        id, category_id, name, slug, description, content,
+        price, badge, image_url, meta_title, meta_description,
+        published_at, is_featured, is_active, display_order,
+        views_count, created_at, updated_at
     `;
 
     const result = await query(queryText, values);

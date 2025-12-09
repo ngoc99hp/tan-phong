@@ -137,7 +137,7 @@ export function ServicesSection() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white text-2xl font-bold">10+</span>
+                <span className="text-white text-2xl font-bold">70+</span>
               </div>
               <h5 className="text-gray-900 font-semibold mb-2">Năm kinh nghiệm</h5>
               <p className="text-gray-600 text-sm">Chuyên môn sâu về CNTT, EdTech và ERP</p>
@@ -145,7 +145,7 @@ export function ServicesSection() {
 
             <div className="text-center">
               <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-white text-2xl font-bold">500+</span>
+                <span className="text-white text-2xl font-bold">50+</span>
               </div>
               <h5 className="text-gray-900 font-semibold mb-2">Khách hàng</h5>
               <p className="text-gray-600 text-sm">Tin tưởng và hài lòng với dịch vụ</p>
