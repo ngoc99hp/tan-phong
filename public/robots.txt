@@ -1,0 +1,25 @@
+# Robots.txt cho Tân Phong Technology
+# tanphong.ai.vn
+
+# Cho phép tất cả search engines
+User-agent: *
+Allow: /
+
+# Chặn các trang không cần index
+Disallow: /admin/
+Disallow: /api/
+Disallow: /admin/login
+Disallow: /admin/products/create
+Disallow: /admin/products/edit/
+
+# Cho phép Google crawl CSS/JS (quan trọng cho SEO)
+User-agent: Googlebot
+Allow: *.css
+Allow: *.js
+
+# Sitemap location
+Sitemap: https://tanphong.ai.vn/sitemap.xml
+Sitemap: https://tanphong.ai.vn/products-sitemap.xml
+
+# Crawl delay (optional, nếu server yếu)
+# Crawl-delay: 10

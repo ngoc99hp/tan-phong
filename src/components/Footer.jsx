@@ -111,10 +111,10 @@ export function Footer() {
               <li className="flex items-center gap-2">
                 <Mail size={18} className="shrink-0 text-primary" />
                 <a
-                  href="mailto:contact@tanphong.vn"
+                  href="mailto:tuyendvhpu@gmail.com"
                   className="hover:text-primary transition-colors"
                 >
-                  contact@tanphong.vn
+                  tuyendvhpu@gmail.com
                 </a>
               </li>
             </ul>
