@@ -8,10 +8,6 @@ import Link from 'next/link';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 
-/* ============================================================
-   ================== CLIENT-SIDE DETAIL PAGE =================
-   ============================================================ */
-
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -24,7 +20,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (params.slug) {
       fetchProductDetail(params.slug);
-      incrementViewCount(params.slug);
+      // incrementViewCount(params.slug);
     }
   }, [params.slug]);
 
@@ -82,7 +78,10 @@ export default function ProductDetailPage() {
     }).format(new Date(d));
   };
 
-  const scrollToContact = () => router.push('/?scroll=contact');
+  // ✅ FIXED: Sử dụng URL query thay vì sessionStorage
+  const scrollToContact = () => {
+    router.push('/?scrollTo=contact');
+  };
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -98,10 +97,6 @@ export default function ProductDetailPage() {
       alert('Đã copy link sản phẩm!');
     }
   };
-
-  /* ============================================================
-     ================= STRUCTURED DATA JSON-LD ==================
-     ============================================================ */
 
   const productStructuredData =
     product != null
@@ -125,8 +120,6 @@ export default function ProductDetailPage() {
             : undefined
         }
       : null;
-
-  /* ================== RENDER UI ==================== */
 
   if (loading) {
     return (
@@ -176,7 +169,7 @@ export default function ProductDetailPage() {
       <div className="min-h-screen bg-gray-50">
         <Header />
 
-        {/* ======== Breadcrumb ======== */}
+        {/* Breadcrumb */}
         <div className="bg-white border-b mt-20">
           <div className="container mx-auto px-4 py-4">
             <nav className="flex items-center gap-2 text-sm">
@@ -195,10 +188,10 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* ==== Main Layout ==== */}
+        {/* Main Layout */}
         <main className="container mx-auto px-4 py-12">
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* ==== Main Article ==== */}
+            {/* Main Article */}
             <div className="lg:col-span-2">
               <article className="bg-white rounded-2xl shadow-lg p-8">
                 {/* Title */}
@@ -273,7 +266,7 @@ export default function ProductDetailPage() {
                     </div>
                     <button
                       onClick={scrollToContact}
-                      className="bg-primary text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl"
+                      className="bg-primary text-white px-8 py-4 rounded-lg font-semibold shadow-lg hover:shadow-xl hover:bg-primary/90 transition-all"
                     >
                       Liên hệ tư vấn ngay
                     </button>
@@ -284,7 +277,7 @@ export default function ProductDetailPage() {
                 <div className="mt-8 pt-8 border-t">
                   <button
                     onClick={handleShare}
-                    className="flex items-center gap-2 text-gray-600 hover:text-primary"
+                    className="flex items-center gap-2 text-gray-600 hover:text-primary transition-colors"
                   >
                     <Share2 size={20} />
                     <span>Chia sẻ sản phẩm</span>
@@ -293,7 +286,7 @@ export default function ProductDetailPage() {
               </article>
             </div>
 
-            {/* ==== Sidebar ==== */}
+            {/* Sidebar */}
             <aside className="lg:col-span-1 z-50">
               <div className="bg-linear-to-br from-primary to-blue-600 rounded-2xl p-8 text-white mb-8 sticky top-24 z-50">
                 <h3 className="text-xl font-bold mb-4">Cần tư vấn?</h3>
@@ -304,14 +297,14 @@ export default function ProductDetailPage() {
                 <div className="space-y-4">
                   <a
                     href="tel:0989150269"
-                    className="block bg-white text-primary px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-100"
+                    className="block bg-white text-primary px-6 py-3 rounded-lg font-semibold text-center hover:bg-gray-100 transition-colors"
                   >
                     Hotline: 0989 150 269
                   </a>
 
                   <button
                     onClick={scrollToContact}
-                    className="w-full bg-transparent border-2 border-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary"
+                    className="w-full bg-transparent border-2 border-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary transition-all"
                   >
                     Gửi yêu cầu tư vấn
                   </button>

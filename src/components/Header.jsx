@@ -1,42 +1,52 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // ✅ FIXED: Xử lý scroll cho cả trang hiện tại VÀ navigate từ trang khác
   const scrollToSection = (id) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      setIsMobileMenuOpen(false);
+    setIsMobileMenuOpen(false);
+    
+    // Nếu đang ở trang chủ, scroll trực tiếp
+    if (pathname === '/') {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Nếu đang ở trang khác, navigate về trang chủ với query
+      router.push(`/?scrollTo=${id}`);
     }
   };
 
   const navItems = [
-    { id: "home", label: "Trang chủ" },
-    { id: "about", label: "Giới thiệu" },
-    { id: "products", label: "Sản phẩm" },
-    { id: "services", label: "Dịch vụ" },
-    { id: "contact", label: "Liên hệ" },
+    { id: 'home', label: 'Trang chủ' },
+    { id: 'about', label: 'Giới thiệu' },
+    { id: 'products', label: 'Sản phẩm' },
+    { id: 'services', label: 'Dịch vụ' },
+    { id: 'contact', label: 'Liên hệ' },
   ];
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-60 transition-all duration-300 ${
-        isScrolled ? "bg-white shadow-md" : "bg-white/95 backdrop-blur-sm"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white shadow-md' : 'bg-white/95 backdrop-blur-sm'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -44,11 +54,10 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <button
-              onClick={() => scrollToSection("home")}
+              onClick={() => scrollToSection('home')}
               className="flex items-center space-x-2"
             >
               <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                {/* <span className="text-white font-bold">TP</span> */}
                 <Image
                   src="/tanphong-removebg-preview.png"
                   alt="Logo Tân Phong"
