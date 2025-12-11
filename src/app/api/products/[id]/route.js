@@ -1,3 +1,6 @@
+// src/app/api/products/[id]/route.js
+// ============================================
+
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 
@@ -7,7 +10,9 @@ import { query } from '@/lib/db';
  */
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    // FIX 1: Unwrap params Promise với await
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
 
     const queryText = `
       SELECT 
@@ -71,16 +76,14 @@ export async function GET(request, { params }) {
 
 /**
  * PUT /api/products/[id]
- * Cập nhật thông tin sản phẩm (Admin only)
- * Body: {
- *   category_id, name, slug, description, content,
- *   price, badge, image_url, meta_title, meta_description,
- *   published_at, is_featured, is_active, display_order
- * }
+ * Cập nhật thông tin sản phẩm
  */
 export async function PUT(request, { params }) {
   try {
-    const { id } = params;
+    // FIX 2: Unwrap params Promise
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
+    
     const body = await request.json();
     const {
       category_id,
@@ -99,6 +102,8 @@ export async function PUT(request, { params }) {
       display_order
     } = body;
 
+    console.log('📝 Updating product:', id, body);
+
     // Kiểm tra sản phẩm có tồn tại không
     const checkExist = await query(
       'SELECT id FROM products WHERE id = $1',
@@ -116,8 +121,8 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Nếu có category_id mới, kiểm tra category có tồn tại không
-    if (category_id !== undefined) {
+    // Validate category_id nếu có
+    if (category_id !== undefined && category_id !== null && category_id !== '') {
       const checkCategory = await query(
         'SELECT id FROM categories WHERE id = $1',
         [category_id]
@@ -135,11 +140,11 @@ export async function PUT(request, { params }) {
       }
     }
 
-    // Nếu có slug mới, kiểm tra trùng lặp (trừ chính nó)
-    if (slug !== undefined) {
+    // Kiểm tra slug trùng lặp (trừ chính nó)
+    if (slug !== undefined && slug !== null && slug !== '') {
       const checkSlug = await query(
         'SELECT id FROM products WHERE slug = $1 AND id != $2',
-        [slug, id]
+        [slug.trim().toLowerCase(), id]
       );
 
       if (checkSlug.rows.length > 0) {
@@ -154,99 +159,115 @@ export async function PUT(request, { params }) {
       }
     }
 
-    // Xây dựng câu UPDATE động với TẤT CẢ các trường từ form
+    // FIX 3: Xây dựng câu UPDATE động - chỉ update các field được gửi lên
     const updates = [];
     const values = [];
     let paramCount = 1;
 
+    // Category ID
     if (category_id !== undefined) {
       updates.push(`category_id = $${paramCount}`);
-      values.push(parseInt(category_id));
+      values.push(category_id ? parseInt(category_id) : null);
       paramCount++;
     }
     
-    if (name !== undefined) {
+    // Name
+    if (name !== undefined && name !== null) {
       updates.push(`name = $${paramCount}`);
       values.push(name.trim());
       paramCount++;
     }
     
-    if (slug !== undefined) {
+    // Slug
+    if (slug !== undefined && slug !== null) {
       updates.push(`slug = $${paramCount}`);
       values.push(slug.trim().toLowerCase());
       paramCount++;
     }
     
+    // Description
     if (description !== undefined) {
       updates.push(`description = $${paramCount}`);
-      values.push(description?.trim() || null);
+      values.push(description ? description.trim() : null);
       paramCount++;
     }
     
-    // THÊM: content field (rich text editor)
+    // Content (Rich Text Editor)
     if (content !== undefined) {
       updates.push(`content = $${paramCount}`);
-      values.push(content?.trim() || null);
+      values.push(content ? content.trim() : null);
       paramCount++;
     }
     
+    // Price
     if (price !== undefined) {
       updates.push(`price = $${paramCount}`);
-      values.push(price?.trim() || null);
+      values.push(price ? price.trim() : null);
       paramCount++;
     }
     
+    // Badge
     if (badge !== undefined) {
       updates.push(`badge = $${paramCount}`);
-      values.push(badge?.trim() || null);
+      values.push(badge ? badge.trim() : null);
       paramCount++;
     }
     
+    // Image URL
     if (image_url !== undefined) {
       updates.push(`image_url = $${paramCount}`);
-      values.push(image_url?.trim() || null);
+      values.push(image_url ? image_url.trim() : null);
       paramCount++;
     }
     
-    // THÊM: meta_title field
+    // Meta Title
     if (meta_title !== undefined) {
       updates.push(`meta_title = $${paramCount}`);
-      values.push(meta_title?.trim() || null);
+      values.push(meta_title ? meta_title.trim() : null);
       paramCount++;
     }
     
-    // THÊM: meta_description field
+    // Meta Description
     if (meta_description !== undefined) {
       updates.push(`meta_description = $${paramCount}`);
-      values.push(meta_description?.trim() || null);
+      values.push(meta_description ? meta_description.trim() : null);
       paramCount++;
     }
     
-    // THÊM: published_at field
+    // Published At
     if (published_at !== undefined) {
       updates.push(`published_at = $${paramCount}`);
-      values.push(published_at ? new Date(published_at) : null);
+      // FIX 4: Xử lý date đúng cách
+      if (published_at && published_at !== '') {
+        values.push(new Date(published_at));
+      } else {
+        values.push(null);
+      }
       paramCount++;
     }
     
+    // Is Featured
     if (is_featured !== undefined) {
       updates.push(`is_featured = $${paramCount}`);
-      values.push(is_featured);
+      values.push(Boolean(is_featured));
       paramCount++;
     }
     
+    // Is Active
     if (is_active !== undefined) {
       updates.push(`is_active = $${paramCount}`);
-      values.push(is_active);
+      values.push(Boolean(is_active));
       paramCount++;
     }
     
+    // Display Order
     if (display_order !== undefined) {
       updates.push(`display_order = $${paramCount}`);
-      values.push(parseInt(display_order));
+      values.push(display_order ? parseInt(display_order) : 0);
       paramCount++;
     }
 
+    // FIX 5: Phải có ít nhất 1 trường để update
     if (updates.length === 0) {
       return NextResponse.json(
         {
@@ -258,8 +279,10 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Thêm updated_at
+    // Always update updated_at
     updates.push(`updated_at = NOW()`);
+    
+    // FIX 6: ID phải là tham số cuối cùng
     values.push(id);
 
     const queryText = `
@@ -273,7 +296,12 @@ export async function PUT(request, { params }) {
         views_count, created_at, updated_at
     `;
 
+    console.log('🔍 Query:', queryText);
+    console.log('🔍 Values:', values);
+
     const result = await query(queryText, values);
+
+    console.log('✅ Update result:', result.rows[0]);
 
     return NextResponse.json({
       success: true,
@@ -283,6 +311,7 @@ export async function PUT(request, { params }) {
 
   } catch (error) {
     console.error('❌ Error updating product:', error);
+    console.error('Stack:', error.stack);
     
     return NextResponse.json(
       {
@@ -297,13 +326,14 @@ export async function PUT(request, { params }) {
 
 /**
  * DELETE /api/products/[id]
- * Xóa sản phẩm (Admin only)
+ * Xóa sản phẩm
  */
 export async function DELETE(request, { params }) {
   try {
-    const { id } = params;
+    // FIX 7: Unwrap params
+    const resolvedParams = await params;
+    const { id } = resolvedParams;
 
-    // Kiểm tra sản phẩm có tồn tại không
     const checkExist = await query(
       'SELECT id, name FROM products WHERE id = $1',
       [id]
@@ -320,7 +350,6 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Xóa sản phẩm
     await query('DELETE FROM products WHERE id = $1', [id]);
 
     return NextResponse.json({

@@ -62,8 +62,25 @@ export default function EditProductPage({ params }) {
       const response = await fetch(`/api/products/${productId}`);
       const data = await response.json();
       
+      console.log('📦 Fetched product:', data);
+      
       if (data.success) {
         const product = data.data;
+        
+        // Format published_at đúng cách
+        let publishedDate = '';
+        if (product.published_at) {
+          try {
+            const date = new Date(product.published_at);
+            if (!isNaN(date.getTime())) {
+              publishedDate = date.toISOString().split('T')[0];
+            }
+          } catch (e) {
+            console.error('Date parsing error:', e);
+          }
+        }
+        
+        // Đảm bảo tất cả fields có giá trị mặc định
         setFormData({
           category_id: product.category_id || '',
           name: product.name || '',
@@ -75,12 +92,10 @@ export default function EditProductPage({ params }) {
           image_url: product.image_url || '',
           meta_title: product.meta_title || '',
           meta_description: product.meta_description || '',
-          is_featured: product.is_featured || false,
+          is_featured: Boolean(product.is_featured),
           is_active: product.is_active !== false,
           display_order: product.display_order || 0,
-          published_at: product.published_at 
-            ? new Date(product.published_at).toISOString().split('T')[0]
-            : new Date().toISOString().split('T')[0]
+          published_at: publishedDate
         });
       } else {
         setSubmitStatus({
@@ -89,7 +104,7 @@ export default function EditProductPage({ params }) {
         });
       }
     } catch (error) {
-      console.error('Error fetching product:', error);
+      console.error('❌ Error fetching product:', error);
       setSubmitStatus({
         type: 'error',
         message: 'Không thể tải thông tin sản phẩm'
@@ -120,6 +135,7 @@ export default function EditProductPage({ params }) {
   };
 
   const handleContentChange = (html) => {
+    console.log('📝 Content changed, length:', html?.length);
     setFormData({
       ...formData,
       content: html
@@ -129,10 +145,27 @@ export default function EditProductPage({ params }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.category_id || !formData.name || !formData.slug) {
+    // Validation đầy đủ
+    if (!formData.name || !formData.name.trim()) {
       setSubmitStatus({
         type: 'error',
-        message: 'Vui lòng điền đầy đủ các trường bắt buộc'
+        message: 'Vui lòng nhập tên sản phẩm'
+      });
+      return;
+    }
+
+    if (!formData.slug || !formData.slug.trim()) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Vui lòng nhập slug sản phẩm'
+      });
+      return;
+    }
+
+    if (!formData.category_id) {
+      setSubmitStatus({
+        type: 'error',
+        message: 'Vui lòng chọn danh mục sản phẩm'
       });
       return;
     }
@@ -141,19 +174,36 @@ export default function EditProductPage({ params }) {
     setSubmitStatus(null);
 
     try {
+      // Chuẩn bị payload đúng cách
+      const payload = {
+        category_id: parseInt(formData.category_id),
+        name: formData.name.trim(),
+        slug: formData.slug.trim(),
+        description: formData.description?.trim() || null,
+        content: formData.content?.trim() || null,
+        price: formData.price?.trim() || null,
+        badge: formData.badge?.trim() || null,
+        image_url: formData.image_url?.trim() || null,
+        meta_title: formData.meta_title?.trim() || null,
+        meta_description: formData.meta_description?.trim() || null,
+        published_at: formData.published_at || null,
+        is_featured: Boolean(formData.is_featured),
+        is_active: Boolean(formData.is_active),
+        display_order: parseInt(formData.display_order) || 0
+      };
+
+      console.log('🚀 Submitting payload:', payload);
+
       const response = await fetch(`/api/products/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          ...formData,
-          category_id: parseInt(formData.category_id),
-          display_order: parseInt(formData.display_order) || 0
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
+      console.log('📥 Response:', data);
 
       if (response.ok && data.success) {
         setSubmitStatus({
@@ -161,21 +211,26 @@ export default function EditProductPage({ params }) {
           message: 'Cập nhật sản phẩm thành công!'
         });
         
+        // Scroll to top để thấy success message
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
         setTimeout(() => {
           router.push('/admin/products');
         }, 1500);
       } else {
         setSubmitStatus({
           type: 'error',
-          message: data.message || 'Có lỗi xảy ra khi cập nhật sản phẩm'
+          message: data.message || data.error || 'Có lỗi xảy ra khi cập nhật sản phẩm'
         });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error('❌ Error updating product:', error);
       setSubmitStatus({
         type: 'error',
         message: 'Không thể kết nối đến server'
       });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setSaving(false);
     }
@@ -292,7 +347,7 @@ export default function EditProductPage({ params }) {
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
-                placeholder="VD: Từ 150.000.000đ"
+                placeholder="VD: Liên hệ"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                 disabled={saving}
               />
