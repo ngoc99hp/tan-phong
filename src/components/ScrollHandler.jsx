@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 /**
  * Component xử lý scroll dựa trên URL query parameter
  * Ví dụ: /?scrollTo=contact
  */
-export function ScrollHandler() {
+function ScrollHandlerInner() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -30,4 +30,13 @@ export function ScrollHandler() {
   }, [searchParams]);
 
   return null;
+}
+
+// ✅ Wrap trong Suspense để tránh lỗi khi deploy
+export function ScrollHandler() {
+  return (
+    <Suspense fallback={null}>
+      <ScrollHandlerInner />
+    </Suspense>
+  );
 }
