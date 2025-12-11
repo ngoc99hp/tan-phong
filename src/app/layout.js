@@ -14,7 +14,7 @@ export const metadata = {
     template: "%s | Tân Phong Technology",
   },
   description:
-    "Công ty Cổ phần Công nghệ Thương mại Tân Phong - Chuyên cung cấp giải pháp ERP, EdTech, phát triển phần mềm và chuyển đổi số cho doanh nghiệp tại Hải Phòng và toàn quốc. Liên hệ: 0989 150 269",
+    "Chuyên cung cấp giải pháp ERP, EdTech, phát triển phần mềm cho doanh nghiệp tại Hải Phòng. Đối tác tin cậy chuyển đổi số. Hotline: 0989 150 269",
   keywords: [
     "giải pháp ERP",
     "phần mềm quản lý doanh nghiệp",
