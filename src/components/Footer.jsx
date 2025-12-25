@@ -95,8 +95,7 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <MapPin size={18} className="mt-1 shrink-0 text-primary" />
                 <span className="text-sm">
-                  Số 13 lô 7 Quán Nam, Ngô Kim Tài, P.Kênh Dương, Q.Lê Chân, Hải
-                  Phòng
+                  Số 13/24 Ngô Kim Tài, Phường Lê Chân,Thành phố Hải Phòng
                 </span>
               </li>
               <li className="flex items-center gap-2">
@@ -105,7 +104,7 @@ export function Footer() {
                   href="tel:0989150269"
                   className="hover:text-primary transition-colors"
                 >
-                  0989 150 269
+                  0989 320 383
                 </a>
               </li>
               <li className="flex items-center gap-2">

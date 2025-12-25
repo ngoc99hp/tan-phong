@@ -61,13 +61,13 @@ export default function ProductDetailPage() {
     }
   };
 
-  const incrementViewCount = async (slug) => {
-    try {
-      await fetch(`/api/products/slug/${slug}/view`, { method: 'POST' });
-    } catch (err) {
-      console.error('Error incrementing view count:', err);
-    }
-  };
+  // const incrementViewCount = async (slug) => {
+  //   try {
+  //     await fetch(`/api/products/slug/${slug}/view`, { method: 'POST' });
+  //   } catch (err) {
+  //     console.error('Error incrementing view count:', err);
+  //   }
+  // };
 
   const formatDate = (d) => {
     if (!d) return '';
@@ -78,7 +78,6 @@ export default function ProductDetailPage() {
     }).format(new Date(d));
   };
 
-  // ✅ FIXED: Sử dụng URL query thay vì sessionStorage
   const scrollToContact = () => {
     router.push('/?scrollTo=contact');
   };

@@ -1,84 +1,100 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState } from "react";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  Send,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate
-    if (!formData.name || !formData.email || !formData.phone || !formData.message) {
-      setSubmitStatus({ 
-        type: 'error', 
-        message: 'Vui lòng điền đầy đủ thông tin bắt buộc' 
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.message
+    ) {
+      setSubmitStatus({
+        type: "error",
+        message: "Vui lòng điền đầy đủ thông tin bắt buộc",
       });
       return;
     }
 
     setIsSubmitting(true);
     setSubmitStatus(null);
-    
+
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' 
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok && data.success) {
-        setSubmitStatus({ 
-          type: 'success', 
-          message: data.message || 'Gửi thông tin thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.' 
+        setSubmitStatus({
+          type: "success",
+          message:
+            data.message ||
+            "Gửi thông tin thành công! Chúng tôi sẽ liên hệ với bạn sớm nhất.",
         });
-        
+
         // Reset form
-        setFormData({ 
-          name: '', 
-          email: '', 
-          phone: '', 
-          subject: '', 
-          message: '' 
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
         });
-        
+
         // Scroll to success message
         setTimeout(() => {
-          const element = document.getElementById('contact-form');
+          const element = document.getElementById("contact-form");
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
           }
         }, 100);
       } else {
-        setSubmitStatus({ 
-          type: 'error', 
-          message: data.message || 'Có lỗi xảy ra. Vui lòng thử lại sau.' 
+        setSubmitStatus({
+          type: "error",
+          message: data.message || "Có lỗi xảy ra. Vui lòng thử lại sau.",
         });
       }
     } catch (error) {
-      console.error('Error submitting contact form:', error);
-      setSubmitStatus({ 
-        type: 'error', 
-        message: 'Không thể kết nối đến server. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua hotline.' 
+      console.error("Error submitting contact form:", error);
+      setSubmitStatus({
+        type: "error",
+        message:
+          "Không thể kết nối đến server. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua hotline.",
       });
     } finally {
       setIsSubmitting(false);
-      
+
       // Auto hide success message after 10 seconds
-      if (submitStatus?.type === 'success') {
+      if (submitStatus?.type === "success") {
         setTimeout(() => setSubmitStatus(null), 10000);
       }
     }
@@ -87,11 +103,11 @@ export function ContactSection() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
-    
+
     // Clear error when user starts typing
-    if (submitStatus?.type === 'error') {
+    if (submitStatus?.type === "error") {
       setSubmitStatus(null);
     }
   };
@@ -103,7 +119,8 @@ export function ContactSection() {
         <div className="text-center mb-16">
           <h2 className="text-gray-900 mb-4">Liên hệ với chúng tôi</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Hãy để lại thông tin, chúng tôi sẽ liên hệ tư vấn cho bạn trong thời gian sớm nhất
+            Hãy để lại thông tin, chúng tôi sẽ liên hệ tư vấn cho bạn trong thời
+            gian sớm nhất
           </p>
         </div>
 
@@ -112,31 +129,41 @@ export function ContactSection() {
           <div className="space-y-6">
             {/* Company Info Card */}
             <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h4 className="text-gray-900 font-semibold mb-2">Thông tin liên hệ</h4>
-              <p className="text-gray-600 text-sm mb-4">Công ty Cổ phần Công nghệ Thương mại Tân Phong</p>
-              
+              <h4 className="text-gray-900 font-semibold mb-2">
+                Thông tin liên hệ
+              </h4>
+              <p className="text-gray-600 text-sm mb-4">
+                Công ty Cổ phần Công nghệ Thương mại Tân Phong
+              </p>
+
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <MapPin className="text-primary mt-1 shrink-0" size={20} />
                   <p className="text-gray-600 text-sm">
-                    Số 13 lô 7 Quán Nam, Ngô Kim Tài, Phường Kênh Dương, Quận Lê Chân, Hải Phòng
+                    Số 13/24 Ngô Kim Tài, Phường Lê Chân,Thành phố Hải Phòng
                   </p>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <Phone className="text-primary shrink-0" size={20} />
-                  <a href="tel:0989150269" className="text-gray-600 hover:text-primary transition-colors">
-                    0989 150 269
+                  <a
+                    href="tel:0989150269"
+                    className="text-gray-600 hover:text-primary transition-colors"
+                  >
+                    0989 320 383
                   </a>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <Mail className="text-primary shrink-0" size={20} />
-                  <a href="mailto:contact@tanphong.vn" className="text-gray-600 hover:text-primary transition-colors">
-                    contact@tanphong.vn
+                  <a
+                    href="mailto:contact@tanphong.vn"
+                    className="text-gray-600 hover:text-primary transition-colors"
+                  >
+                    tuyendvhpu@gmail.com
                   </a>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
                   <Clock className="text-primary mt-1 shrink-0" size={20} />
                   <div className="text-sm">
@@ -153,8 +180,11 @@ export function ContactSection() {
               <p className="text-blue-100 text-sm mb-4">
                 Liên hệ ngay để được tư vấn
               </p>
-              <a href="tel:0989150269" className="text-3xl font-bold hover:underline block">
-                0989 150 269
+              <a
+                href="tel:0989150269"
+                className="text-3xl font-bold hover:underline block"
+              >
+                0989 320 383
               </a>
             </div>
           </div>
@@ -162,19 +192,24 @@ export function ContactSection() {
           {/* Contact Form */}
           <div className="md:col-span-2" id="contact-form">
             <div className="bg-white rounded-2xl p-8 shadow-lg">
-              <h4 className="text-gray-900 font-semibold mb-2">Gửi tin nhắn cho chúng tôi</h4>
+              <h4 className="text-gray-900 font-semibold mb-2">
+                Gửi tin nhắn cho chúng tôi
+              </h4>
               <p className="text-gray-600 text-sm mb-6">
-                Điền thông tin vào form bên dưới, chúng tôi sẽ phản hồi trong vòng 24h
+                Điền thông tin vào form bên dưới, chúng tôi sẽ phản hồi trong
+                vòng 24h
               </p>
 
               {/* Status Messages */}
               {submitStatus && (
-                <div className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
-                  submitStatus.type === 'success' 
-                    ? 'bg-green-50 text-green-700 border border-green-200' 
-                    : 'bg-red-50 text-red-700 border border-red-200'
-                }`}>
-                  {submitStatus.type === 'success' ? (
+                <div
+                  className={`mb-6 p-4 rounded-lg flex items-start gap-3 ${
+                    submitStatus.type === "success"
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {submitStatus.type === "success" ? (
                     <CheckCircle size={20} className="shrink-0 mt-0.5" />
                   ) : (
                     <AlertCircle size={20} className="shrink-0 mt-0.5" />
@@ -264,7 +299,7 @@ export function ContactSection() {
                   />
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full bg-primary hover:bg-primary-dark text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -292,18 +327,18 @@ export function ContactSection() {
             <div className="p-6 border-b">
               <h4 className="text-gray-900 font-semibold">Bản đồ đường đi</h4>
               <p className="text-gray-600 text-sm mt-1">
-                Số 13 lô 7 Quán Nam, Ngô Kim Tài, Phường Kênh Dương, Quận Lê Chân, Hải Phòng
+                Số 13/24 Ngô Kim Tài, Phường Lê Chân,Thành phố Hải Phòng
               </p>
             </div>
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3728.4961234567!2d106.68269!3d20.86234!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjDCsDUxJzQ0LjQiTiAxMDbCsDQwJzU3LjciRQ!5e0!3m2!1svi!2s!4v1234567890"
+              src="https://www.google.com/maps?q=Số%2013/24%20Ngô%20Kim%20Tài,%20Phường%20Lê%20Chân,%20Thành%20phố%20Hải%20Phòng&output=embed"
               width="100%"
               height="400"
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Google Maps - Tân Phong Location"
+              title="Google Maps - Số 13/24 Ngô Kim Tài, Lê Chân, Hải Phòng"
             ></iframe>
           </div>
         </div>
